@@ -1,10 +1,6 @@
 <?php
 
-// pw for bugs + root: buggy
-// set @id = LAST_INSERT_ID();
-
-
-// defaults
+// some hardcoded defaults ... some of this info is in json file
 define('PRODUCT_ID', 3);
 define('COMPONENT_ID', 16);
 define('BUG_SEVERITY', 'normal');
@@ -12,22 +8,22 @@ define('OP_SYS', 'All');
 define('REP_PLATFORM', 'All');
 
 
-//  7 | contributor@bugs.browserplus.org 
+// map lighthouse collaboraters to bugzilla profile userids
 function m_name($name) {
 	switch($name) {
 		case "lloyd": return 1;
 		case "steve": return 2;
-		case "Gary MacDonald": return 3;
-		case "durand": return 4;
-		case "dgrigsby": return 5;
-		default: return 7;
+		default: return 3;
 	}
 }
 
+// map lighthouse priorities to bugzilla.  lighthouse uses integers (like 1-100), so 
+// could map these ints into "Lowest", "Low", ...
 function m_priority($priority) {
 	return "---";
 }
 
+// map milestones ...
 function m_milestone($milestone) {
 	switch($milestone) {
 		case "2.5":
@@ -41,6 +37,7 @@ function m_milestone($milestone) {
 	}
 }
 
+// map states
 function m_state($state)
 {
 	switch($state) {
@@ -64,6 +61,7 @@ function m_time($t) {
 }
 
 
+// creates sql insert stmt
 function insert($table, $data) {
 	$fields = join(", ", array_keys($data));
 	$values = array();
@@ -79,6 +77,7 @@ function insert($table, $data) {
 	return "INSERT INTO $table ($fields) VALUES ($values);\n";
 }
 
+// generates all the sql to insert 1 bug + comments
 function insert_bug($data, $fulltext, $comments) {
 	$sql = array();
 	$sql[] = insert("bugs", $data);
@@ -99,14 +98,6 @@ function insert_bug($data, $fulltext, $comments) {
 	return $sql;
 }
 
-
-if (count($argv) < 2) {
-	echo "Usage: php ${argv[0]} file\n";
-	exit;
-}
-
-$bugs = json_decode(file_get_contents($argv[1]), true);
-
 function create_comment($name, $time, $body) {
 	return array(
 		"comment_id" => 0, 
@@ -121,11 +112,17 @@ function create_comment($name, $time, $body) {
 	);
 }
 
+//------------------------------------------------------------
+// Script Starts Here
+//------------------------------------------------------------
+if (count($argv) < 2) {
+	echo "Usage: php ${argv[0]} file\n";
+	exit;
+}
 
-// lloyd@hilaiel.com, durand@yahoo-inc.com, dgrigsby@yahoo-inc.com, garymd@yahoo-inc.com, steve@bigfrog.net,
-// else contributor@bugs.browserplus.org
-// new, open, resolved, invalid and hold
-// NEW, ACCEPTED, RESOLVED, RESOLVED, NEW
+$bugs = json_decode(file_get_contents($argv[1]), true);
+
+
 foreach($bugs as $bug) {
 	$creation_ts = m_time($bug["created_at"]);
 	$delta_ts    = m_time($bug["created_at"]);
