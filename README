@@ -1,6 +1,15 @@
 These scripts work in conjunction to move export bugs from LightHouse and import them into Bugzilla.
 The export script creates a JSON file.  The import script creates a SQL file.
 
+lighthouse_dumper.rb pulls gunk outta lighthouse using their web api, resulting in a json database
+of your bugs
+
+import.php pushes that gunk into bugzilla
+
 Much has to be customized with the scripts.
 
 Good luck.
+
+CAVEATES/BUGS
+* hacky
+* you gotta manually move attachments over.
